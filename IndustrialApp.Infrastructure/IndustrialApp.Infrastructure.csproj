@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.SemanticKernel"  />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IndustrialApp.Application\IndustrialApp.Application.csproj" />
+  </ItemGroup>
+</Project>

@@ -319,7 +319,8 @@ h3 {
     margin-top: 24px;
     border: 1px solid var(--ai-card-border);
     border-radius: 22px;
-    background: var(--ai-surface-strong);
+    /*background: var(--ai-surface-strong);*/
+    background: white;
 }
 
 .ai-alert {

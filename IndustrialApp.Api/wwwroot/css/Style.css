@@ -20,6 +20,7 @@
 
 body {
     background: #eef2f7;
+    margin: 0;
 }
 
 .ai-select {
@@ -33,7 +34,8 @@ body {
 
 .ai-page-shell {
     position: relative;
-    min-height: calc(100vh - 32px);
+    min-height: 100dvh;
+    box-sizing: border-box;
     overflow: hidden;
     padding: 48px 24px;
     color: var(--ai-text);

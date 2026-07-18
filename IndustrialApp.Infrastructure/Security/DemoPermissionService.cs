@@ -1,6 +1,8 @@
-﻿namespace IndustrialApp.Application.Security;
+using IndustrialApp.Application.Security;
 
-public class PermissionService: IPermissionService
+namespace IndustrialApp.Infrastructure.Security;
+
+public sealed class DemoPermissionService : IPermissionService
 {
     public Task<bool> CanUseAiAsync(string userId, CancellationToken cancellationToken)
     {

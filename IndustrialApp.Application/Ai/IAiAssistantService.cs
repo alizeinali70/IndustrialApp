@@ -2,6 +2,5 @@
 
 public interface IAiAssistantService
 {
-    Task<string> AskAsync(string userId, string question, CancellationToken cancellationToken);
-
+    Task<AskAiResponse> AskAsync(AskAiRequest request, CancellationToken cancellationToken);
 }

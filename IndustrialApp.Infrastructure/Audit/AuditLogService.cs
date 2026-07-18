@@ -5,6 +5,8 @@ namespace IndustrialApp.Infrastructure.Audit;
 
 public partial class AuditLogService : IAuditLogService
 {
+    private const int PreviewLimit = 120;
+
     private readonly ILogger<AuditLogService> _logger;
 
     public AuditLogService(ILogger<AuditLogService> logger)
@@ -18,7 +20,24 @@ public partial class AuditLogService : IAuditLogService
         string answer,
         CancellationToken cancellationToken)
     {
-        LogAiAudit(userId, question, answer);
+        ArgumentNullException.ThrowIfNull(userId);
+        ArgumentNullException.ThrowIfNull(question);
+        ArgumentNullException.ThrowIfNull(answer);
+
+        if (!_logger.IsEnabled(LogLevel.Information))
+        {
+            return Task.CompletedTask;
+        }
+
+        var questionPreview = CreatePreview(question);
+        var answerPreview = CreatePreview(answer);
+
+        LogAiAudit(
+            userId,
+            questionPreview,
+            question.Length,
+            answerPreview,
+            answer.Length);
 
         return Task.CompletedTask;
     }
@@ -26,9 +45,23 @@ public partial class AuditLogService : IAuditLogService
     [LoggerMessage(
         EventId = 1001,
         Level = LogLevel.Information,
-        Message = "AI audit. UserId: {UserId}, Question: {Question}, Answer: {Answer}")]
+        Message = "AI audit. UserId: {UserId}, QuestionPreview: {QuestionPreview}, QuestionLength: {QuestionLength}, AnswerPreview: {AnswerPreview}, AnswerLength: {AnswerLength}")]
     private partial void LogAiAudit(
         string userId,
-        string question,
-        string answer);
+        string questionPreview,
+        int questionLength,
+        string answerPreview,
+        int answerLength);
+
+    private static string CreatePreview(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        if (value.Length <= PreviewLimit)
+        {
+            return value;
+        }
+
+        return $"{value[..PreviewLimit]}...";
+    }
 }

@@ -57,15 +57,16 @@ ViewData["Title"] = "Industrial AI Assistant";
             <form method="post" asp-page="/AiAssistant/Index" id="aiForm" class="ai-form">
                 @Html.AntiForgeryToken()
 
-                <label for="Question" class="ai-label">Your question</label>
+                <label asp-for="Input.Question" class="ai-label"></label>
 
                 <div class="ai-input-shell">
-                    <textarea name="Question"
-                              id="Question"
+                    <textarea asp-for="Input.Question"
                               class="ai-textarea"
                               rows="8"
-                              placeholder="Ask something about production, documents, logs, quality issues...">@Model.Question</textarea>
+                              placeholder="Ask something about production, documents, logs, quality issues..."></textarea>
                 </div>
+
+                <span asp-validation-for="Input.Question" class="ai-hint"></span>
 
                 <div class="ai-actions">
                     <div class="ai-hint">

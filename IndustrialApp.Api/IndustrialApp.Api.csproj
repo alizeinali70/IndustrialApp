@@ -2,17 +2,12 @@
    
  
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
       <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
    
  
     <ItemGroup>
       <ProjectReference Include="..\IndustrialApp.Application\IndustrialApp.Application.csproj" />
-      <ProjectReference Include="..\IndustrialApp.Domain\IndustrialApp.Domain.csproj" />
       <ProjectReference Include="..\IndustrialApp.Infrastructure\IndustrialApp.Infrastructure.csproj" />
     </ItemGroup>
 

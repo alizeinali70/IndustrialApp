@@ -1,27 +1,32 @@
 ﻿using IndustrialApp.Application.Ai;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 
 namespace IndustrialApp.Api.Pages.AiAssistant;
 
 public sealed class IndexModel : PageModel
 {
     private readonly IAiAssistantService _aiAssistantService;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
+    private readonly IAiHealthService _aiHealthService;
+    private readonly AiOptions _aiOptions;
 
     public IndexModel(
         IAiAssistantService aiAssistantService,
-        IHttpClientFactory httpClientFactory,
-        IConfiguration configuration)
+        IAiHealthService aiHealthService,
+        IOptions<AiOptions> aiOptions)
     {
+        ArgumentNullException.ThrowIfNull(aiAssistantService);
+        ArgumentNullException.ThrowIfNull(aiHealthService);
+        ArgumentNullException.ThrowIfNull(aiOptions);
+
         _aiAssistantService = aiAssistantService;
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
+        _aiHealthService = aiHealthService;
+        _aiOptions = aiOptions.Value;
     }
 
     [BindProperty]
-    public string Question { get; set; } = string.Empty;
+    public AskQuestionInput Input { get; set; } = new();
 
     public string? Answer { get; private set; }
 
@@ -29,17 +34,16 @@ public sealed class IndexModel : PageModel
 
     public bool OllamaAvailable { get; private set; }
 
-    public string ModelId => _configuration["Ai:ModelId"] ?? "Unknown model";
+    public string ModelId => _aiOptions.ModelId;
 
-    public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
+    public async Task OnGetAsync(CancellationToken cancellationToken)
     {
-        OllamaAvailable = await GetOllamaAvailabilityAsync(cancellationToken);
-        return Page();
+        OllamaAvailable = await _aiHealthService.IsAvailableAsync(cancellationToken);
     }
 
     public async Task<IActionResult> OnGetStatusAsync(CancellationToken cancellationToken)
     {
-        var isAvailable = await GetOllamaAvailabilityAsync(cancellationToken);
+        var isAvailable = await _aiHealthService.IsAvailableAsync(cancellationToken);
 
         return new JsonResult(new
         {
@@ -51,55 +55,31 @@ public sealed class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
-        OllamaAvailable = await GetOllamaAvailabilityAsync(cancellationToken);
+        OllamaAvailable = await _aiHealthService.IsAvailableAsync(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(Question))
+        if (!ModelState.IsValid)
         {
-            ErrorMessage = "Please enter a question.";
-            OllamaAvailable = await GetOllamaAvailabilityAsync(cancellationToken);
             return Page();
         }
 
         try
         {
             var userId = User.Identity?.Name ?? "local-dev-user";
-
-            Answer = await _aiAssistantService.AskAsync(
-                userId,
-                Question,
+            var response = await _aiAssistantService.AskAsync(
+                new AskAiRequest(userId, Input.Question),
                 cancellationToken);
-        }
-        catch (InvalidOperationException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
-        catch (HttpRequestException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
 
+            Answer = response.Answer;
+        }
+        catch (AiServiceUnavailableException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
 
         return Page();
-    }
-
-    private async Task<bool> GetOllamaAvailabilityAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var client = _httpClientFactory.CreateClient("OllamaHealth");
-            using var response = await client.GetAsync(
-                new Uri(client.BaseAddress!, "api/tags"),
-                cancellationToken);
-
-            return response.IsSuccessStatusCode;
-        }
-        catch (HttpRequestException)
-        {
-            return false;
-        }
-        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return false;
-        }
     }
 }

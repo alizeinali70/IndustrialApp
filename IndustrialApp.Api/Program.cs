@@ -23,6 +23,12 @@ builder.Services.AddKernel()
         modelId: modelId,
         endpoint: new Uri(endpoint));
 
+builder.Services.AddHttpClient("OllamaHealth", client =>
+{
+    client.BaseAddress = new Uri(endpoint);
+    client.Timeout = TimeSpan.FromSeconds(2);
+});
+
 builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();

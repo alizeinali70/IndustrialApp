@@ -46,12 +46,12 @@ ViewData["Title"] = "Industrial AI Assistant";
             <div class="ai-panel-header">
                 <div>
                     <div class="ai-status-row">
-                        <span class="ai-status-dot"></span>
-                        <span>Local AI ready</span>
+                        <span id="ollamaStatusDot" class="ai-status-dot @(Model.OllamaAvailable ? "" : "is-offline")" aria-label="@(Model.OllamaAvailable ? "Ollama is running" : "Ollama is not running")"></span>
+                        <span id="ollamaStatusText">@(Model.OllamaAvailable ? "Local AI ready" : "Ollama is offline")</span>
                     </div>
                     <h2>Ask a question</h2>
                 </div>
-                <div class="ai-model-badge">Ollama</div>
+                <div class="ai-model-badge">@Model.ModelId</div>
             </div>
 
             <form method="post" asp-page="/AiAssistant/Index" id="aiForm" class="ai-form">
@@ -112,6 +112,37 @@ ViewData["Title"] = "Industrial AI Assistant";
     const button = document.getElementById("askButton");
     const copyButton = document.getElementById("copyAnswerButton");
     const answer = document.getElementById("aiAnswer");
+    const statusDot = document.getElementById("ollamaStatusDot");
+    const statusText = document.getElementById("ollamaStatusText");
+
+    const setOllamaStatus = (isAvailable, text, ariaLabel) => {
+        if (!statusDot || !statusText) {
+            return;
+        }
+
+        statusDot.classList.toggle("is-offline", !isAvailable);
+        statusDot.setAttribute("aria-label", ariaLabel);
+        statusText.innerText = text;
+    };
+
+    const refreshOllamaStatus = async () => {
+        try {
+            const response = await fetch("@Url.Page("/AiAssistant/Index", pageHandler: "Status")", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Status request failed.");
+            }
+
+            const data = await response.json();
+            setOllamaStatus(data.ollamaAvailable, data.statusText, data.ariaLabel);
+        } catch {
+            setOllamaStatus(false, "Ollama is offline", "Ollama is not running");
+        }
+    };
 
     if (form && button) {
         form.addEventListener("submit", () => {
@@ -127,5 +158,10 @@ ViewData["Title"] = "Industrial AI Assistant";
             copyButton.innerText = "Copied";
             setTimeout(() => copyButton.innerText = "Copy", 1600);
         });
+    }
+
+    if (statusDot && statusText) {
+        refreshOllamaStatus();
+        setInterval(refreshOllamaStatus, 5000);
     }
 </script>

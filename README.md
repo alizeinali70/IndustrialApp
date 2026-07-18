@@ -6,7 +6,7 @@ An ASP.NET Core (.NET 10) industrial production assistant that integrates a loca
 
 ## What This Project Is
 
-This project acts as a blueprint for implementing **Clean Architecture** in an AI-driven ecosystem. Originally, core concerns were intertwined within `Program.cs` and tightly coupled files. This refactored version decouples structural responsibilities so that:
+This project acts as a blueprint for implementing **Clean Architecture** in an AI-driven ecosystem. 
 
 * `Program.cs` only handles app startup and dependency injection.
 * Application services focus strictly on business flow.
